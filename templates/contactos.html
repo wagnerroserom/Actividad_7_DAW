@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block titulo %}Mis Contactos{% endblock %}
+
+{% block contenido %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <h2>Contactos de {{ session.nombre }}</h2>
+
+    <!-- Botón para agregar contacto -->
+    <a href="/contactos/agregar" class="btn btn-primary">
+        + Agregar Contacto
+    </a>
+</div>
+
+<!-- Tabla de contactos -->
+<div class="card shadow">
+    <div class="card-body">
+
+        {% if contactos %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th>Detalle</th>
+                    <th style="width: 150px;">Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for c in contactos %}
+                <tr>
+                    <td>{{ c.nombre }}</td>
+                    <td>{{ c.correo }}</td>
+                    <td>{{ c.telefono }}</td>
+                    <td>{{ c.detalle }}</td>
+
+                    <td>
+                        <!-- Botón editar -->
+                        <a href="/contactos/editar/{{ c.id }}" 
+                        class="btn btn-sm btn-warning">Editar</a>
+
+                        <!-- Botón eliminar -->
+                        <a href="/contactos/eliminar/{{ c.id }}"
+                        onclick="return confirm('¿Deseas eliminar este contacto?')"
+                        class="btn btn-sm btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="text-center">Aún no tienes contactos registrados.</p>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
