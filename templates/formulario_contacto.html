@@ -1,1 +1,60 @@
 
+{% extends "base.html" %}
+
+{% block titulo %}{{ accion }} Contacto{% endblock %}
+
+{% block contenido %}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+
+        <div class="card shadow">
+            <div class="card-body">
+
+                <h3 class="mb-4 text-center">{{ accion }} Contacto</h3>
+
+                <form method="POST">
+
+                    <<!-- Obligatoriedad de nombre -->
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        <input type="text" id="nombre" name="nombre" 
+                            class="form-control"
+                            value="{{ contact.nombre if contact else '' }}"
+                            required>
+                    </div>
+
+                    <!-- Correo -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo</label>
+                        <input type="email" id="email" name="email" 
+                            class="form-control"
+                            value="{{ contact.correo if contact else '' }}">
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="mb-3">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="text" id="telefono" name="telefono" 
+                            class="form-control"
+                            value="{{ contact.telefono if contact else '' }}">
+                    </div>
+
+                    <!-- Notas -->
+                    <div class="mb-3">
+                        <label for="notas" class="form-label">Detalle / Notas</label>
+                        <textarea id="notas" name="notas" class="form-control" rows="3">
+                            {{ contact.detalle if contact else '' }}
+                        </textarea>
+                    </div>
+
+                    <button class="btn btn-success w-100">
+                        {{ accion }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %} 
