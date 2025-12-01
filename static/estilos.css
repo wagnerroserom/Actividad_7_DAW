@@ -1,0 +1,14 @@
+/* Estilos propios del proyecto.
+   Esta parte se mantiene simple porque Bootstrap ya cubre la mayor parte del diseño. */
+
+body {
+    background-color: #f4f4f4;
+}
+
+.card {
+    border-radius: 8px;
+}
+
+textarea {
+    resize: vertical;
+}
