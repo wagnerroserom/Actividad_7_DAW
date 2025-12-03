@@ -1,0 +1,480 @@
+ Actividad
+  
+  
+
+Tema: Práctica guiada para la construcción de una agenda de contactos con Python.
+Descripción: Desarrollar una aplicación web con Flask que permita a los usuarios 
+registrarse, iniciar sesión y gestionar sus contactos personales. 
+El proyecto debe implementarse con una estructura de tipo MVC (Modelos, Vistas y Controladores), 
+además de incorporar la debida base de datos en MySQL para la persistencia de información.
+
+
+Requerimientos
+1. Autenticación de usuarios
+Registro de usuario con los campos:
+* id, nombre, email, password_hash, fecha_creacion.
+* Inicio de sesión mediante email y contraseña.
+* Cierre de sesión (logout).
+* Hashing de contraseñas con werkzeug.security o bcrypt.
+
+
+Validaciones:
+* Email único y con formato válido.
+* Contraseña mínima de 8 caracteres.
+
+
+2. Gestión de contactos
+Operaciones CRUD:
+* Crear contacto.
+* Listar contactos del usuario autenticado.
+* Editar contacto.
+* Eliminar contacto.
+Estructura de la tabla contactos:
+id, user_id (FK), nombre, correo, telefono, detalle, fecha_creacion.
+
+
+Validaciones:
+* Nombre obligatorio.
+* Email opcional pero con formato válido.
+* Cada usuario solo puede acceder a sus propios contactos.
+
+
+Requerimientos técnicos
+* Lenguaje: Python 3.10 o superior.
+* Framework: Flask.
+* Base de datos: MySQL.
+* Conector: mysql.connector.
+* Autenticación: Flask-session.
+* Plantillas: HTML con Jinja2 y Bootstrap.
+* Ejecución: local o mediante ngrok.
+
+
+Rutas mínimas requeridas
+Para autenticación
+/registro — Formulario de registro y guardado.
+/login — Inicio de sesión.
+/salir — Cierre de sesión.
+
+
+Para contactos
+/contactos — Listar contactos del usuario autenticado.
+/contactos/agregar — Formulario para agregar contacto.
+/contactos/editar/<id> — Editar contacto.
+/contactos/eliminar/<id> — Eliminar contacto.
+
+
+Te recomiendo que utilices la siguiente estructura de directorios para tu proyecto:
+
+
+agenda/
+│
+├── app.py
+├── config.py
+│
+├── modelos/
+│   ├── __init__.py
+│   ├── usuario_model.py
+│   └── contactos_model.py
+│
+├── controladores/
+│   ├── __init__.py
+│   ├── usuario_controller.py
+│   └── contactos_controller.py
+│
+├── templates/
+│   ├── base.html
+│   ├── login.html
+│   ├── registro.html
+│   ├── contactos.html
+│   └── formulario_contacto.html
+│
+├── static/
+│   └── estilos.css
+│
+├── requerimientos.txt
+
+
+
+
+Paso 1: Instalación de dependencias
+pip install flask mysql-connector-python werkzeug
+
+
+Paso 2: Conexión a MySQL (config.py)
+import mysql.connector
+def conexion():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="agenda_db"
+    )
+
+
+Paso 3: Base de datos
+CREATE DATABASE agenda_db;
+USE agenda_db;
+CREATE TABLE usuarios(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  correo VARCHAR(120) UNIQUE,
+  contrasena_hash VARCHAR(200),
+  fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE contactos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT,
+  nombre VARCHAR(120) NOT NULL,
+  correo VARCHAR(120),
+  telefono VARCHAR(30),
+  detalle TEXT,
+  fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+
+Paso 4: usuario_model.py
+from config import conexion
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
+def registrar_usuario(nombre, correo, contrasena):
+    conn = conexion()
+    cur = conn.cursor()
+    hash_pass = generate_password_hash(contrasena)
+    cur.execute("INSERT INTO usuarios(nombre, correo, contrasena_hash) VALUES (%s, %s, %s)", (nombre, email, hash_pass))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def obtener_usuario_por_correo(correo):
+    conn = conexion()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("SELECT * FROM usuarios WHERE correo = %s", (correo,))
+    usuario = cur.fetchone()
+    cur.close()
+    conn.close()
+    return usuario
+
+
+def verificar_usuario(correo, contrasena):
+    usuario = obtener_usuario_por_correo(correo)
+    if usuario and check_password_hash(usuario['contrasena_hash'], contrasena):
+        return user
+    return None
+
+
+Paso 5: contactos_model.py
+from config import conexion
+
+
+def obtener_contacto(usuario_id):
+    conn = conexion()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("SELECT * FROM contactos WHERE usuario_id = %s", (usuario_id,))
+    data = cur.fetchall()
+    cur.close()
+    conn.close()
+    return data
+
+
+def agregar_contacto(usuario_id, nombre, correo, telefono, detalle):
+    conn = conexion()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO contactos (usuario_id, nombre, correo, telefono, detalle) VALUES (%s, %s, %s, %s, %s)", (usuario_id, nombre, correo, telefono, detalle))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def obtener_contacto(id, usuario_id):
+    conn = conexion()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("SELECT * FROM contactos WHERE id=%s AND usuario_id=%s", (id, usuario_id))
+    contacto = cur.fetchone()
+    cur.close()
+    conn.close()
+    return contacto
+
+
+def actualizar_contacto(id, usuario_id, nombre, correo, telefono, detalle):
+    conn = conexion()
+    cur = conn.cursor()
+    cur.execute("UPDATE contactos SET nombre=%s, correo=%s, telefono=%s, detalle=%s WHERE id=%s AND usuario_id=%s", (nombre, email, telefono, detalle, id, usuario_id))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def eliminar_contacto(id, usuario_id):
+    conn = conexion()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM contactos WHERE id=%s AND usuario_id=%s", (id, usuario_id))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+
+
+
+
+Paso 6: usuario_controller.py
+from flask import render_template, request, redirect, session, flash
+from modelos.usuario_model import registrar_usuario, verificar_usuario
+app = Flask(__name__)
+@app.route('/registro', methods=['GET', 'POST'])
+def registro():
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        correo = request.form['correo']
+        contrasena= request.form['contrasena']
+        registrar_usuario(nombre, correo, contrasena)
+        flash('Usuario registrado correctamente.')
+        return redirect('/login')
+    return render_template('registro.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        correo = request.form['correo']
+        contrasena = request.form['contrasena']
+        usuario = verificar_usuario(correo, contrasena)
+        if usuario:
+            session['usuario_id'] = usuario['id']
+            session['nombre'] = usuario['nombre']
+            return redirect('/contactos')
+        flash('Credenciales incorrectas.')
+    return render_template('login.html')
+
+
+@app.route('/salir')
+def salir():
+    session.clear()
+    return redirect('/login')
+
+
+Paso 7: Contactos_controller.py
+from flask import render_template, request, redirect, session
+from modelos.contactos_model import obtener_contacto, agregar_contacto, obtener_contacto, actualizar_contacto, eliminar_contacto
+app = Flask(__name__)
+@app.route('/contactos')
+def contactos():
+    if 'usuario_id' not in session:
+        return redirect('/login')
+    data = obtener_contacto(session['usuario_id'])
+    return render_template('contactos.html', contactos=data)
+
+
+@app.route('/contactos/agregar', methods=['GET', 'POST'])
+def agregar():
+    if 'usuario_id' not in session:
+        return redirect('/login')
+    if request.method == 'POST':
+ agregar_contacto(session['usuario_id'], request.form['nombre'], request.form['correo'], request.form['telefono'], request.form['detalle'])
+        return redirect('/contactos')
+    return render_template('formulario_contacto.html', accion='Agregar')
+
+
+@app.route('/contactos/editar/<int:id>', methods=['GET', 'POST'])
+def editar(id):
+    if 'usuario_id' not in session:
+        return redirect('/login')
+    if request.method == 'POST':
+        actualizar_contacto(id, session['usuario_id'], request.form['nombre'], request.form['correo'], request.form['telefono'], request.form['detalle'])
+        return redirect('/contactos')
+    contacto = obtener_contacto(id, session['usuario_id'])
+    return render_template('formulario_contacto.html', accion='Editar', contact=contacto)
+
+
+@app.route('/contactos/eliminar/<int:id>')
+def eliminar(id):
+    if 'usuario_id' not in session:
+        return redirect('/login')
+    eliminar_contacto(id, session['usuario_id'])
+    return redirect('/contactos')
+
+
+Paso 8: Plantillas HTML con Bootstrap integrado.
+Base.html
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Agenda</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">Agenda</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        {% if session.usuario_id %}
+          <li class="nav-item"><span class="nav-link disabled">{{ session.nombre }}</span></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('salir') }}">Salir</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Iniciar sesión</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('registro') }}">Registrar</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+
+
+<div class="container mt-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+
+  {% block content %}{% endblock %}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+Login.html
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <h3 class="mb-3">Iniciar sesión</h3>
+    <form method="post" novalidate>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" name="correo" type="email" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <input class="form-control" name="contrasena" type="password" required>
+      </div>
+      <button class="btn btn-primary" type="submit">Entrar</button>
+      <a class="btn btn-link" href="{{ url_for('registro') }}">Crear cuenta</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+
+Registro.html
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <h3 class="mb-3">Registro</h3>
+    <form method="post" novalidate>
+      <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <input class="form-control" name="nombre" type="text" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" name="correo" type="email" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <input class="form-control" name="contrasena" type="password" minlength="8" required>
+        <div class="form-text">Mínimo 8 caracteres.</div>
+      </div>
+      <button class="btn btn-success" type="submit">Registrar</button>
+      <a class="btn btn-link" href="{{ url_for('login') }}">¿Ya tienes cuenta?</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+
+Contactos.html
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Mis contactos</h3>
+  <a class="btn btn-success" href="{{ url_for('agregar') }}">+ Nuevo</a>
+</div>
+
+
+{% if contactos %}
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>Notas</th>
+        <th style="width:170px">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in contactos %}
+      <tr>
+        <td>{{ c.nombre }}</td>
+        <td>{{ c.correo or '-' }}</td>
+        <td>{{ c.telefono or '-' }}</td>
+        <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.detalle or '' }}</td>
+        <td>
+          <a class="btn btn-sm btn-primary" href="{{ url_for('editar', id=c.id) }}">Editar</a>
+          <a class="btn btn-sm btn-danger" href="{{ url_for('eliminar', id=c.id) }}" onclick="return confirm('Eliminar contacto?')">Eliminar</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="alert alert-info">No hay contactos. Agrega el primero.</div>
+{% endif %}
+{% endblock %}
+
+
+Formulario_contacto.html
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <h3 class="mb-3">{{ accion }} contacto</h3>
+    <form method="post" novalidate>
+      <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <input class="form-control" name="nombre" type="text" required value="{{ contact.nombre if contact else '' }}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" name="email" type="email" value="{{ contact.correo if contact else '' }}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Teléfono</label>
+        <input class="form-control" name="telefono" value="{{ contact.telefono if contact else '' }}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Notas</label>
+        <textarea class="form-control" name="notas" rows="4">{{ contact.detalle if contact else '' }}</textarea>
+      </div>
+      <button class="btn btn-primary" type="submit">Guardar</button>
+      <a class="btn btn-secondary" href="{{ url_for('contactos') }}">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+Profesor: Ing. Oscar López G.
+Dios les bendiga, éxitos en su actividad.
+
