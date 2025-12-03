@@ -1,7 +1,9 @@
+
 from flask import render_template, request, redirect, session, flash
 from app import app
 from modelos.usuario_model import registrar_usuario, verificar_usuario, obtener_usuario_por_correo
 
+# Ruta raíz: redirige a login
 @app.route('/')
 def raiz():
     return redirect('/login')
@@ -18,18 +20,19 @@ def registro():
         if len(contrasena) < 8:
             flash('La contraseña debe tener al menos 8 caracteres.', 'danger')
             return render_template('registro.html')
-        
+
         # Se verificará correo único
         if obtener_usuario_por_correo(correo):
             flash('El correo ya se encuentra registrado.', 'danger')
             return render_template('registro.html')
-        
-        # Registro de ususario
+
+        # Registro de usuario
         registrar_usuario(nombre, correo, contrasena)
         flash('El usuario ha sido registrado correctamente.', 'success')
         return redirect('/login')
 
     return render_template('registro.html')
+
 
 # Login
 @app.route('/login', methods=['GET', 'POST'])
@@ -42,12 +45,14 @@ def login():
             session['usuario_id'] = usuario['id']
             session['nombre'] = usuario['nombre']
             return redirect('/contactos')
+        # Si las credenciales son incorrectas: mostrar mensaje
         flash('Las credenciales son incorrectas.', 'danger')
+    
     return render_template('login.html')
 
-    # Salir
-    @app.route('/salir')
-    def salir():
-        session.clear()
-        return redirect('/login')
-    
+
+# Salir
+@app.route('/salir')
+def salir():
+    session.clear()
+    return redirect('/login')
