@@ -1,9 +1,14 @@
+
+# modelos/contactos_model.py
 from config import conexion
 
 def listar_contactos(usuario_id):
     conn = conexion()
     cur = conn.cursor(dictionary=True)
-    cur.execute("SELECT * FROM contactos WHERE usuario_id = %s ORDER BY fecha_creacion DESC", (usuario_id,))
+    cur.execute(
+        "SELECT * FROM contactos WHERE usuario_id = %s ORDER BY fecha_creacion DESC",
+        (usuario_id,)
+    )
     data = cur.fetchall()
     cur.close()
     conn.close()
@@ -17,13 +22,18 @@ def agregar_contacto(usuario_id, nombre, correo, telefono, detalle):
         (usuario_id, nombre, correo, telefono, detalle)
     )
     conn.commit()
+    inserted_id = cur.lastrowid  # id del contacto insertado
     cur.close()
     conn.close()
+    return inserted_id
 
 def obtener_contacto_por_id(id, usuario_id):
     conn = conexion()
     cur = conn.cursor(dictionary=True)
-    cur.execute("SELECT *FROM contactos WHERE id=%s AND usuario_id=%s", (id, usuario_id))
+    cur.execute(
+        "SELECT * FROM contactos WHERE id = %s AND usuario_id = %s",
+        (id, usuario_id)
+    )
     contacto = cur.fetchone()
     cur.close()
     conn.close()
@@ -33,7 +43,7 @@ def actualizar_contacto(id, usuario_id, nombre, correo, telefono, detalle):
     conn = conexion()
     cur = conn.cursor()
     cur.execute(
-        "UPDATE contactos SET nombre=%s, correo=%s, telefono=%s, detalle=%s WHERE id=%s AND usuario_id=%s",
+        "UPDATE contactos SET nombre = %s, correo = %s, telefono = %s, detalle = %s WHERE id = %s AND usuario_id = %s",
         (nombre, correo, telefono, detalle, id, usuario_id)
     )
     conn.commit()
@@ -43,7 +53,10 @@ def actualizar_contacto(id, usuario_id, nombre, correo, telefono, detalle):
 def eliminar_contacto(id, usuario_id):
     conn = conexion()
     cur = conn.cursor()
-    cur.execute("DELETE FROM contactos WHERE id=%s AND usuario_=%s", (id, usuario_id))
+    cur.execute(
+        "DELETE FROM contactos WHERE id = %s AND usuario_id = %s",
+        (id, usuario_id)
+    )
     conn.commit()
     cur.close()
     conn.close()
